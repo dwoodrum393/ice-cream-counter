@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍦 Cruise Ice Cream Counter</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFF8F0;
+    --cone-brown: #C87941;
+    --cherry: #E63946;
+    --text-mid: #7A5C4E;
+    --ocean: #A8DADC;
+    --ocean-deep: #457B9D;
+    --wave: #E9F5F6;
+    --shadow: rgba(61,43,31,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ocean-bg {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 38%;
+    background: linear-gradient(180deg, var(--ocean) 0%, var(--ocean-deep) 100%);
+    border-radius: 60% 60% 0 0 / 30px 30px 0 0;
+    z-index: 0;
+  }
+
+  .wave {
+    position: fixed;
+    bottom: 35%;
+    left: -10%;
+    width: 120%;
+    height: 60px;
+    background: var(--wave);
+    border-radius: 50%;
+    opacity: 0.55;
+    animation: wave 4s ease-in-out infinite alternate;
+    z-index: 1;
+  }
+  .wave2 {
+    bottom: 36.5%;
+    animation: wave 5.5s ease-in-out infinite alternate-reverse;
+    opacity: 0.35;
+  }
+  @keyframes wave {
+    from { transform: translateX(-3%) scaleY(1); }
+    to   { transform: translateX(3%) scaleY(1.2); }
+  }
+
+  .sun {
+    position: fixed;
+    top: 30px; right: 60px;
+    width: 70px; height: 70px;
+    background: radial-gradient(circle, #FFE169 60%, #FFD60A 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 12px rgba(255,214,10,0.18), 0 0 0 24px rgba(255,214,10,0.08);
+    animation: sunPulse 3s ease-in-out infinite;
+    z-index: 0;
+  }
+  @keyframes sunPulse {
+    0%,100% { box-shadow: 0 0 0 12px rgba(255,214,10,0.18), 0 0 0 24px rgba(255,214,10,0.08); }
+    50%      { box-shadow: 0 0 0 18px rgba(255,214,10,0.22), 0 0 0 34px rgba(255,214,10,0.10); }
+  }
+
+  .card {
+    position: relative;
+    z-index: 10;
+    background: white;
+    border-radius: 36px;
+    padding: 40px 44px 36px;
+    box-shadow: 0 16px 56px var(--shadow), 0 2px 8px rgba(0,0,0,0.06);
+    text-align: center;
+    max-width: 380px;
+    width: 90%;
+    border: 3px solid rgba(200,121,65,0.12);
+  }
+
+  .card-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--ocean-deep);
+    margin-bottom: 2px;
+  }
+
+  .card-sub {
+    font-size: 0.85rem;
+    color: var(--text-mid);
+    font-weight: 600;
+    margin-bottom: 28px;
+  }
+
+  .cone-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto 20px;
+    padding: 10px;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    user-select: none;
+  }
+
+  .cone-btn svg {
+    display: block;
+    filter: drop-shadow(0 8px 18px rgba(200,121,65,0.22));
+  }
+
+  .wobble { animation: wobble 0.45s ease; }
+  @keyframes wobble {
+    0%   { transform: scale(1) rotate(0deg); }
+    20%  { transform: scale(1.13) rotate(-6deg); }
+    40%  { transform: scale(1.1) rotate(5deg); }
+    60%  { transform: scale(1.06) rotate(-3deg); }
+    80%  { transform: scale(1.03) rotate(2deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  .tap-hint {
+    font-size: 0.8rem;
+    color: #B5A9A3;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
+
+  .counter-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .counter-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 5rem;
+    line-height: 1;
+    color: var(--cone-brown);
+    min-width: 100px;
+    display: inline-block;
+  }
+
+  .bump { animation: bump 0.3s ease; }
+  @keyframes bump {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.3); }
+    70%  { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+
+  .counter-label {
+    font-size: 0.95rem;
+    color: var(--text-mid);
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .message {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: var(--cherry);
+    min-height: 1.5rem;
+    margin-bottom: 20px;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 2px solid #E8D8D0;
+    border-radius: 20px;
+    padding: 7px 22px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .reset-btn:hover {
+    background: #FFF0E8;
+    border-color: var(--cone-brown);
+    color: var(--cone-brown);
+  }
+
+  .particle {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999;
+    animation: particleFly 0.8s ease-out forwards;
+  }
+  @keyframes particleFly {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.3); }
+  }
+</style>
+</head>
+<body>
+
+<div class="ocean-bg"></div>
+<div class="wave"></div>
+<div class="wave wave2"></div>
+<div class="sun"></div>
+
+<div class="card">
+  <div class="card-title">🚢 Cruise Cone Counter</div>
+  <div class="card-sub">All-You-Can-Eat Ice Cream Bar</div>
+
+  <button class="cone-btn" id="coneBtn">
+    <svg width="130" height="185" viewBox="0 0 130 185" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="coneLines" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="10" x2="10" y2="0" stroke="#A0612C" stroke-width="1.2"/>
+        </pattern>
+        <radialGradient id="s3g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#C87941"/></radialGradient>
+        <radialGradient id="s2g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#3A9B7F"/></radialGradient>
+        <radialGradient id="s1g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#D05080"/></radialGradient>
+      </defs>
+      <path d="M38 115 L65 182 L92 115 Z" fill="#C87941"/>
+      <path d="M38 115 L65 182 L92 115 Z" fill="url(#coneLines)" opacity="0.5"/>
+      <ellipse cx="65" cy="115" rx="27" ry="7" fill="#B06830"/>
+      <ellipse cx="65" cy="95" rx="29" ry="28" fill="#FFDAC1"/>
+      <ellipse cx="65" cy="95" rx="29" ry="28" fill="url(#s3g)" opacity="0.25"/>
+      <ellipse cx="65" cy="68" rx="26" ry="25" fill="#B5EAD7"/>
+      <ellipse cx="65" cy="68" rx="26" ry="25" fill="url(#s2g)" opacity="0.25"/>
+      <ellipse cx="65" cy="44" rx="23" ry="22" fill="#FFB3C6"/>
+      <ellipse cx="65" cy="44" rx="23" ry="22" fill="url(#s1g)" opacity="0.25"/>
+      <rect x="56" y="34" width="7" height="2.5" rx="1.2" fill="#FFE169" transform="rotate(-20 56 34)"/>
+      <rect x="67" y="38" width="7" height="2.5" rx="1.2" fill="#A8DADC" transform="rotate(15 67 38)"/>
+      <rect x="59" y="44" width="6" height="2.5" rx="1.2" fill="#E63946" transform="rotate(5 59 44)"/>
+      <rect x="70" y="48" width="6" height="2.5" rx="1.2" fill="#FFB3C6" transform="rotate(-30 70 48)"/>
+      <rect x="53" y="50" width="5" height="2.5" rx="1.2" fill="#B5EAD7" transform="rotate(40 53 50)"/>
+      <path d="M65 24 Q72 16 70 10" stroke="#6B3F2A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <circle cx="70" cy="9" r="6" fill="#E63946"/>
+      <circle cx="68" cy="7" r="2" fill="rgba(255,255,255,0.4)"/>
+    </svg>
+  </button>
+
+  <p class="tap-hint">TAP THE CONE TO COUNT</p>
+
+  <div class="counter-wrap">
+    <span class="counter-num" id="counterNum">0</span>
+    <div class="counter-label">🍦<br>cones<br>eaten</div>
+  </div>
+
+  <div class="message" id="message">Tap the cone to start! 🍦</div>
+  <button class="reset-btn" id="resetBtn">↩ Reset Counter</button>
+</div>
+
+<script>
+(function() {
+  var count = 0;
+  var btn = document.getElementById('coneBtn');
+  var numEl = document.getElementById('counterNum');
+  var msgEl = document.getElementById('message');
+  var resetBtn = document.getElementById('resetBtn');
+
+  var messages = [
+    [50, "50 cones... absolute icon! 🍦👑"],
+    [30, "30 cones! Are you even human?! 🤖"],
+    [25, "The ice cream bar fears you! 😂"],
+    [20, "20 cones! Legend status! 👑"],
+    [15, "You deserve a medal! 🥇"],
+    [10, "Double digits! Pure dedication! 💪"],
+    [7,  "Living your best cruise life! 🚢"],
+    [5,  "Five?! You're on a ROLL! 🌊"],
+    [3,  "A hat-trick of cones! 🏆"],
+    [2,  "Two scoops, no regrets! 😄"],
+    [1,  "First scoop — vacation has begun! 🎉"],
+    [0,  "Tap the cone to start! 🍦"]
+  ];
+
+  function getMessage(n) {
+    for (var i = 0; i < messages.length; i++) {
+      if (n >= messages[i][0]) return messages[i][1];
+    }
+    return "Keep scooping!";
+  }
+
+  function spawnParticles() {
+    var rect = btn.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 3;
+    var colors = ['#FFB3C6','#B5EAD7','#FFDAC1','#FFE169','#A8DADC','#E63946'];
+    for (var i = 0; i < 12; i++) {
+      (function() {
+        var p = document.createElement('div');
+        p.className = 'particle';
+        var size = 7 + Math.random() * 7;
+        var tx = (Math.random() - 0.5) * 160;
+        var ty = -(Math.random() * 120 + 30);
+        p.style.cssText = 'width:' + size + 'px;height:' + size + 'px;background:' +
+          colors[Math.floor(Math.random() * colors.length)] + ';left:' + cx + 'px;top:' + cy +
+          'px;--tx:' + tx + 'px;--ty:' + ty + 'px;';
+        document.body.appendChild(p);
+        setTimeout(function() { if (p.parentNode) p.parentNode.removeChild(p); }, 850);
+      })();
+    }
+  }
+
+  btn.addEventListener('click', function() {
+    count = count + 1;
+    numEl.textContent = String(count);
+    msgEl.textContent = getMessage(count);
+
+    numEl.classList.remove('bump');
+    void numEl.offsetWidth;
+    numEl.classList.add('bump');
+
+    btn.classList.remove('wobble');
+    void btn.offsetWidth;
+    btn.classList.add('wobble');
+
+    spawnParticles();
+  });
+
+  resetBtn.addEventListener('click', function() {
+    if (count === 0) return;
+    if (window.confirm('Reset your ' + count + ' cone' + (count !== 1 ? 's' : '') + '? 😢')) {
+      count = 0;
+      numEl.textContent = '0';
+      msgEl.textContent = 'Tap the cone to start! 🍦';
+    }
+  });
+})();
+</script>
+</body>
+</html>
