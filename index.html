@@ -42,10 +42,8 @@
 
   .wave {
     position: fixed;
-    bottom: 35%;
-    left: -10%;
-    width: 120%;
-    height: 60px;
+    bottom: 35%; left: -10%;
+    width: 120%; height: 60px;
     background: var(--wave);
     border-radius: 50%;
     opacity: 0.55;
@@ -177,7 +175,15 @@
     font-size: 1rem;
     color: var(--cherry);
     min-height: 1.5rem;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+  }
+
+  .saved-note {
+    font-size: 0.75rem;
+    color: #B5A9A3;
+    font-weight: 600;
+    margin-bottom: 14px;
+    min-height: 1.1rem;
   }
 
   .reset-btn {
@@ -260,15 +266,25 @@
   </div>
 
   <div class="message" id="message">Tap the cone to start! 🍦</div>
+  <div class="saved-note" id="savedNote"></div>
   <button class="reset-btn" id="resetBtn">↩ Reset Counter</button>
 </div>
 
 <script>
 (function() {
+  var STORAGE_KEY = 'cruiseConeCount';
+
+  // Load saved count, fallback to 0 if localStorage unavailable
   var count = 0;
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved !== null) count = parseInt(saved, 10) || 0;
+  } catch(e) {}
+
   var btn = document.getElementById('coneBtn');
   var numEl = document.getElementById('counterNum');
   var msgEl = document.getElementById('message');
+  var savedNote = document.getElementById('savedNote');
   var resetBtn = document.getElementById('resetBtn');
 
   var messages = [
@@ -291,6 +307,37 @@
       if (n >= messages[i][0]) return messages[i][1];
     }
     return "Keep scooping!";
+  }
+
+  function saveCount(n) {
+    try {
+      localStorage.setItem(STORAGE_KEY, String(n));
+      // Show a brief "saved" confirmation
+      savedNote.textContent = '✓ Count saved to this device';
+      clearTimeout(saveCount._timer);
+      saveCount._timer = setTimeout(function() {
+        savedNote.textContent = '';
+      }, 2000);
+    } catch(e) {
+      savedNote.textContent = '';
+    }
+  }
+
+  function renderCount(animate) {
+    numEl.textContent = String(count);
+    msgEl.textContent = getMessage(count);
+    if (animate) {
+      numEl.classList.remove('bump');
+      void numEl.offsetWidth;
+      numEl.classList.add('bump');
+    }
+  }
+
+  // Render saved count on load
+  renderCount(false);
+  if (count > 0) {
+    savedNote.textContent = '✓ Resumed from last visit (' + count + ' cone' + (count !== 1 ? 's' : '') + ')';
+    setTimeout(function() { savedNote.textContent = ''; }, 3000);
   }
 
   function spawnParticles() {
@@ -316,12 +363,8 @@
 
   btn.addEventListener('click', function() {
     count = count + 1;
-    numEl.textContent = String(count);
-    msgEl.textContent = getMessage(count);
-
-    numEl.classList.remove('bump');
-    void numEl.offsetWidth;
-    numEl.classList.add('bump');
+    renderCount(true);
+    saveCount(count);
 
     btn.classList.remove('wobble');
     void btn.offsetWidth;
@@ -334,8 +377,8 @@
     if (count === 0) return;
     if (window.confirm('Reset your ' + count + ' cone' + (count !== 1 ? 's' : '') + '? 😢')) {
       count = 0;
-      numEl.textContent = '0';
-      msgEl.textContent = 'Tap the cone to start! 🍦';
+      renderCount(false);
+      saveCount(0);
     }
   });
 })();
