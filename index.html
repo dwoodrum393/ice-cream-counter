@@ -3,355 +3,573 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍦 Cruise Ice Cream Counter</title>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<title>My Counters</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --cream: #FFF8F0;
-    --cone-brown: #C87941;
-    --cherry: #E63946;
-    --text-mid: #7A5C4E;
-    --ocean: #A8DADC;
-    --ocean-deep: #457B9D;
-    --wave: #E9F5F6;
-    --shadow: rgba(61,43,31,0.15);
-  }
+/* ── RESET & BASE ─────────────────────────────── */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  transition: background 0.5s;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* ── PAGES ────────────────────────────────────── */
+.page { display:none; width:100vw; min-height:100vh; }
+.page.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
 
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: var(--cream);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-  }
+/* ══════════════════════════════════════════════
+   HAMBURGER MENU
+══════════════════════════════════════════════ */
+.hamburger-btn {
+  position: fixed;
+  top: 18px; right: 18px;
+  z-index: 1000;
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 5px;
+  transition: background 0.3s, transform 0.2s;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.hamburger-btn:hover { transform: scale(1.08); }
+.hamburger-btn .bar {
+  width: 22px; height: 2.5px;
+  border-radius: 2px;
+  transition: background 0.3s, transform 0.35s, opacity 0.35s;
+}
+/* bar colors adapt to page */
+body.page-ice .bar { background: #457B9D; }
+body.page-ball .bar { background: #F4A23A; }
 
-  .ocean-bg {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 38%;
-    background: linear-gradient(180deg, var(--ocean) 0%, var(--ocean-deep) 100%);
-    border-radius: 60% 60% 0 0 / 30px 30px 0 0;
-    z-index: 0;
-  }
+/* animated X when open */
+.hamburger-btn.open .bar:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+.hamburger-btn.open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger-btn.open .bar:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
 
-  .wave {
-    position: fixed;
-    bottom: 35%; left: -10%;
-    width: 120%; height: 60px;
-    background: var(--wave);
-    border-radius: 50%;
-    opacity: 0.55;
-    animation: wave 4s ease-in-out infinite alternate;
-    z-index: 1;
-  }
-  .wave2 {
-    bottom: 36.5%;
-    animation: wave 5.5s ease-in-out infinite alternate-reverse;
-    opacity: 0.35;
-  }
-  @keyframes wave {
-    from { transform: translateX(-3%) scaleY(1); }
-    to   { transform: translateX(3%) scaleY(1.2); }
-  }
+/* Drawer */
+.menu-drawer {
+  position: fixed;
+  top: 0; right: -280px;
+  width: 260px; height: 100vh;
+  z-index: 999;
+  display: flex; flex-direction: column;
+  padding: 80px 0 40px;
+  transition: right 0.35s cubic-bezier(.4,0,.2,1);
+  box-shadow: -4px 0 32px rgba(0,0,0,0.18);
+}
+.menu-drawer.open { right: 0; }
+body.page-ice .menu-drawer { background: #FFF8F0; }
+body.page-ball .menu-drawer { background: #1A1A2E; }
 
-  .sun {
-    position: fixed;
-    top: 30px; right: 60px;
-    width: 70px; height: 70px;
-    background: radial-gradient(circle, #FFE169 60%, #FFD60A 100%);
-    border-radius: 50%;
-    box-shadow: 0 0 0 12px rgba(255,214,10,0.18), 0 0 0 24px rgba(255,214,10,0.08);
-    animation: sunPulse 3s ease-in-out infinite;
-    z-index: 0;
-  }
-  @keyframes sunPulse {
-    0%,100% { box-shadow: 0 0 0 12px rgba(255,214,10,0.18), 0 0 0 24px rgba(255,214,10,0.08); }
-    50%      { box-shadow: 0 0 0 18px rgba(255,214,10,0.22), 0 0 0 34px rgba(255,214,10,0.10); }
-  }
+.menu-drawer h3 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 0 24px 16px;
+}
+body.page-ice .menu-drawer h3 { color: #B5A9A3; }
+body.page-ball .menu-drawer h3 { color: #555577; }
 
-  .card {
-    position: relative;
-    z-index: 10;
-    background: white;
-    border-radius: 36px;
-    padding: 40px 44px 36px;
-    box-shadow: 0 16px 56px var(--shadow), 0 2px 8px rgba(0,0,0,0.06);
-    text-align: center;
-    max-width: 380px;
-    width: 90%;
-    border: 3px solid rgba(200,121,65,0.12);
-  }
+.menu-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 24px;
+  cursor: pointer;
+  border: none; background: none;
+  width: 100%;
+  text-align: left;
+  border-radius: 0;
+  transition: background 0.2s;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+body.page-ice .menu-item { color: #3D2B1F; }
+body.page-ball .menu-item { color: #E0E0F0; }
+body.page-ice .menu-item:hover { background: rgba(200,121,65,0.08); }
+body.page-ball .menu-item:hover { background: rgba(244,162,58,0.1); }
+.menu-item.current { position: relative; }
+body.page-ice .menu-item.current { color: #C87941; }
+body.page-ball .menu-item.current { color: #F4A23A; }
+.menu-item .menu-icon { font-size: 1.4rem; }
+.menu-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  z-index: 998;
+  background: rgba(0,0,0,0.3);
+}
+.menu-overlay.open { display: block; }
 
-  .card-title {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.5rem;
-    color: var(--ocean-deep);
-    margin-bottom: 2px;
-  }
+/* ══════════════════════════════════════════════
+   ICE CREAM PAGE
+══════════════════════════════════════════════ */
+body.page-ice { background: #FFF8F0; }
 
-  .card-sub {
-    font-size: 0.85rem;
-    color: var(--text-mid);
-    font-weight: 600;
-    margin-bottom: 28px;
-  }
+.ice-ocean {
+  position: fixed; bottom:0; left:0; right:0; height:38%;
+  background: linear-gradient(180deg,#A8DADC 0%,#457B9D 100%);
+  border-radius: 60% 60% 0 0 / 30px 30px 0 0;
+  z-index:0;
+}
+.ice-wave {
+  position:fixed; bottom:35%; left:-10%;
+  width:120%; height:60px;
+  background:#E9F5F6; border-radius:50%;
+  opacity:0.55; animation:wave 4s ease-in-out infinite alternate; z-index:1;
+}
+.ice-wave2 { bottom:36.5%; animation:wave 5.5s ease-in-out infinite alternate-reverse; opacity:0.35; }
+@keyframes wave {
+  from { transform:translateX(-3%) scaleY(1); }
+  to   { transform:translateX(3%) scaleY(1.2); }
+}
+.ice-sun {
+  position:fixed; top:30px; right:70px;
+  width:60px; height:60px;
+  background:radial-gradient(circle,#FFE169 60%,#FFD60A 100%);
+  border-radius:50%;
+  box-shadow:0 0 0 10px rgba(255,214,10,0.18),0 0 0 20px rgba(255,214,10,0.08);
+  animation:sunPulse 3s ease-in-out infinite; z-index:0;
+}
+@keyframes sunPulse {
+  0%,100%{box-shadow:0 0 0 10px rgba(255,214,10,0.18),0 0 0 20px rgba(255,214,10,0.08);}
+  50%    {box-shadow:0 0 0 16px rgba(255,214,10,0.22),0 0 0 30px rgba(255,214,10,0.10);}
+}
 
-  .cone-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: block;
-    margin: 0 auto 20px;
-    padding: 10px;
-    -webkit-tap-highlight-color: transparent;
-    outline: none;
-    user-select: none;
-  }
+.ice-card {
+  position:relative; z-index:10;
+  background:white; border-radius:36px;
+  padding:36px 44px 32px;
+  box-shadow:0 16px 56px rgba(61,43,31,0.15),0 2px 8px rgba(0,0,0,0.06);
+  text-align:center; max-width:360px; width:90%;
+  border:3px solid rgba(200,121,65,0.12);
+}
+.ice-title {
+  font-family:'Fredoka One',cursive; font-size:1.45rem;
+  color:#457B9D; margin-bottom:2px;
+}
+.ice-sub {
+  font-size:0.82rem; color:#7A5C4E; font-weight:600; margin-bottom:24px;
+}
+.cone-btn {
+  background:none; border:none; cursor:pointer;
+  display:block; margin:0 auto 18px; padding:10px;
+  -webkit-tap-highlight-color:transparent; outline:none; user-select:none;
+}
+.cone-btn svg { display:block; filter:drop-shadow(0 8px 18px rgba(200,121,65,0.22)); }
+.cone-btn.wobble { animation:wobble 0.45s ease; }
+@keyframes wobble {
+  0%  {transform:scale(1) rotate(0deg);}
+  20% {transform:scale(1.13) rotate(-6deg);}
+  40% {transform:scale(1.1) rotate(5deg);}
+  60% {transform:scale(1.06) rotate(-3deg);}
+  80% {transform:scale(1.03) rotate(2deg);}
+  100%{transform:scale(1) rotate(0deg);}
+}
+.tap-hint { font-size:0.78rem; color:#B5A9A3; font-weight:700; letter-spacing:0.5px; margin-bottom:14px; }
+.ice-counter-wrap { display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:12px; }
+.ice-num {
+  font-family:'Fredoka One',cursive; font-size:5rem; line-height:1;
+  color:#C87941; min-width:100px; display:inline-block;
+}
+.ice-num.bump { animation:bump 0.3s ease; }
+@keyframes bump {
+  0%  {transform:scale(1);}
+  40% {transform:scale(1.3);}
+  70% {transform:scale(0.95);}
+  100%{transform:scale(1);}
+}
+.ice-label { font-size:0.92rem; color:#7A5C4E; font-weight:700; line-height:1.5; text-align:left; }
+.ice-message { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#E63946; min-height:1.4rem; margin-bottom:8px; }
+.ice-saved { font-size:0.72rem; color:#B5A9A3; font-weight:600; margin-bottom:12px; min-height:1rem; }
+.ice-reset {
+  background:none; border:2px solid #E8D8D0; border-radius:20px;
+  padding:6px 20px; font-family:'Nunito',sans-serif; font-size:0.8rem;
+  font-weight:700; color:#7A5C4E; cursor:pointer;
+  transition:background 0.2s,border-color 0.2s,color 0.2s;
+}
+.ice-reset:hover { background:#FFF0E8; border-color:#C87941; color:#C87941; }
 
-  .cone-btn svg {
-    display: block;
-    filter: drop-shadow(0 8px 18px rgba(200,121,65,0.22));
-  }
+/* ══════════════════════════════════════════════
+   BASKETBALL PAGE
+══════════════════════════════════════════════ */
+body.page-ball { background: #0F0F1A; }
 
-  .wobble { animation: wobble 0.45s ease; }
-  @keyframes wobble {
-    0%   { transform: scale(1) rotate(0deg); }
-    20%  { transform: scale(1.13) rotate(-6deg); }
-    40%  { transform: scale(1.1) rotate(5deg); }
-    60%  { transform: scale(1.06) rotate(-3deg); }
-    80%  { transform: scale(1.03) rotate(2deg); }
-    100% { transform: scale(1) rotate(0deg); }
-  }
+/* hardwood floor lines */
+.ball-court {
+  position:fixed; inset:0; z-index:0; overflow:hidden;
+}
+.ball-court::before {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(180,120,40,0.07) 59px, rgba(180,120,40,0.07) 60px),
+    linear-gradient(180deg, #0F0F1A 0%, #1A1008 100%);
+}
+.court-circle {
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:300px; height:300px;
+  border-radius:50%;
+  border:2px solid rgba(244,162,58,0.08);
+}
+.court-line {
+  position:absolute; left:0; right:0; top:50%;
+  height:1px; background:rgba(244,162,58,0.06);
+}
 
-  .tap-hint {
-    font-size: 0.8rem;
-    color: #B5A9A3;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-bottom: 16px;
-  }
+.ball-wrap {
+  position:relative; z-index:10;
+  width:100%; max-width:480px; padding:0 20px;
+}
 
-  .counter-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    margin-bottom: 14px;
-  }
+.ball-title {
+  font-family:'Bebas Neue',cursive;
+  font-size:2rem; letter-spacing:4px;
+  color:#F4A23A; text-align:center;
+  margin-bottom:4px;
+  text-shadow: 0 0 30px rgba(244,162,58,0.4);
+}
+.ball-sub {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.8rem; font-weight:600; letter-spacing:3px;
+  color:#555577; text-align:center; text-transform:uppercase;
+  margin-bottom:28px;
+}
 
-  .counter-num {
-    font-family: 'Fredoka One', cursive;
-    font-size: 5rem;
-    line-height: 1;
-    color: var(--cone-brown);
-    min-width: 100px;
-    display: inline-block;
-  }
+/* Scoreboard */
+.scoreboard {
+  background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+  border-radius:20px;
+  border:1px solid rgba(244,162,58,0.2);
+  box-shadow:0 0 40px rgba(244,162,58,0.08), 0 8px 32px rgba(0,0,0,0.5);
+  padding:24px 20px 20px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+.scoreboard::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,#F4A23A,transparent);
+}
 
-  .bump { animation: bump 0.3s ease; }
-  @keyframes bump {
-    0%   { transform: scale(1); }
-    40%  { transform: scale(1.3); }
-    70%  { transform: scale(0.95); }
-    100% { transform: scale(1); }
-  }
+.teams-row {
+  display:grid; grid-template-columns:1fr auto 1fr; gap:12px;
+  align-items:center; margin-bottom:20px;
+}
+.team-block { text-align:center; }
+.team-name-input {
+  font-family:'Bebas Neue',cursive;
+  font-size:1.3rem; letter-spacing:2px;
+  color:#E0E0F0; background:transparent;
+  border:none; border-bottom:1px solid rgba(255,255,255,0.1);
+  text-align:center; width:100%; outline:none;
+  padding:2px 4px; transition:border-color 0.2s;
+}
+.team-name-input:focus { border-bottom-color:#F4A23A; }
 
-  .counter-label {
-    font-size: 0.95rem;
-    color: var(--text-mid);
-    font-weight: 700;
-    line-height: 1.5;
-    text-align: left;
-  }
+.score-display {
+  font-family:'Bebas Neue',cursive;
+  font-size:5.5rem; line-height:1;
+  color:#F4A23A;
+  text-shadow:0 0 20px rgba(244,162,58,0.5);
+  min-width:80px; display:inline-block;
+}
+.score-display.flash { animation:scoreFlash 0.4s ease; }
+@keyframes scoreFlash {
+  0%  {transform:scale(1);color:#F4A23A;}
+  30% {transform:scale(1.25);color:#FFD166;}
+  100%{transform:scale(1);color:#F4A23A;}
+}
 
-  .message {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1rem;
-    color: var(--cherry);
-    min-height: 1.5rem;
-    margin-bottom: 10px;
-  }
+.vs-badge {
+  font-family:'Bebas Neue',cursive;
+  font-size:1.1rem; color:#333355; letter-spacing:1px;
+}
 
-  .saved-note {
-    font-size: 0.75rem;
-    color: #B5A9A3;
-    font-weight: 600;
-    margin-bottom: 14px;
-    min-height: 1.1rem;
-  }
+/* Score controls */
+.score-controls {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.team-controls { display:flex; flex-direction:column; gap:8px; align-items:center; }
 
-  .reset-btn {
-    background: none;
-    border: 2px solid #E8D8D0;
-    border-radius: 20px;
-    padding: 7px 22px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--text-mid);
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s, color 0.2s;
-  }
-  .reset-btn:hover {
-    background: #FFF0E8;
-    border-color: var(--cone-brown);
-    color: var(--cone-brown);
-  }
+.pts-row { display:flex; gap:6px; }
+.pts-btn {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.8rem; font-weight:800; letter-spacing:1px;
+  padding:8px 10px; border-radius:8px; border:none;
+  cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;
+  background:rgba(244,162,58,0.12); color:#F4A23A;
+  border:1px solid rgba(244,162,58,0.2);
+}
+.pts-btn:hover { background:rgba(244,162,58,0.2); transform:translateY(-1px); }
+.pts-btn:active { transform:scale(0.95); }
 
-  .particle {
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 999;
-    animation: particleFly 0.8s ease-out forwards;
-  }
-  @keyframes particleFly {
-    0%   { opacity: 1; transform: translate(0,0) scale(1); }
-    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.3); }
-  }
+.undo-btn {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.72rem; font-weight:700; letter-spacing:1px;
+  padding:5px 12px; border-radius:6px; border:none;
+  cursor:pointer; background:rgba(255,255,255,0.04);
+  color:#444466; border:1px solid rgba(255,255,255,0.06);
+  transition:background 0.2s, color 0.2s;
+  width:100%;
+}
+.undo-btn:hover { background:rgba(255,255,255,0.08); color:#8888AA; }
+
+/* Period + Clock row */
+.game-info-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 20px; background:rgba(0,0,0,0.2);
+  border-radius:10px; margin-bottom:14px;
+  border:1px solid rgba(255,255,255,0.04);
+}
+.period-wrap { display:flex; align-items:center; gap:8px; }
+.period-label {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.72rem; font-weight:700; letter-spacing:2px;
+  color:#444466; text-transform:uppercase;
+}
+.period-val {
+  font-family:'Bebas Neue',cursive;
+  font-size:1.4rem; color:#8888BB; letter-spacing:1px;
+}
+.period-btns { display:flex; gap:4px; }
+.period-btn {
+  width:24px; height:24px; border-radius:6px; border:none;
+  background:rgba(255,255,255,0.05); color:#8888BB;
+  font-size:0.9rem; cursor:pointer; transition:background 0.2s;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Barlow Condensed',sans-serif; font-weight:700;
+}
+.period-btn:hover { background:rgba(244,162,58,0.15); color:#F4A23A; }
+
+.ball-reset {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.75rem; font-weight:700; letter-spacing:2px;
+  padding:7px 18px; border-radius:8px; border:none;
+  cursor:pointer; background:rgba(255,255,255,0.04);
+  color:#444466; border:1px solid rgba(255,255,255,0.06);
+  text-transform:uppercase; transition:background 0.2s, color 0.2s;
+}
+.ball-reset:hover { background:rgba(244,162,58,0.1); color:#F4A23A; border-color:rgba(244,162,58,0.2); }
+
+/* ── SHARED PARTICLE ──────────────────────── */
+.particle {
+  position:fixed; border-radius:50%; pointer-events:none;
+  z-index:999; animation:particleFly 0.8s ease-out forwards;
+}
+@keyframes particleFly {
+  0%  {opacity:1;transform:translate(0,0) scale(1);}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0.3);}
+}
 </style>
 </head>
-<body>
+<body class="page-ice">
 
-<div class="ocean-bg"></div>
-<div class="wave"></div>
-<div class="wave wave2"></div>
-<div class="sun"></div>
+<!-- ── DECORATIONS (ice cream) ── -->
+<div class="ice-ocean"></div>
+<div class="ice-wave"></div>
+<div class="ice-wave ice-wave2"></div>
+<div class="ice-sun"></div>
 
-<div class="card">
-  <div class="card-title">🚢 Cruise Cone Counter</div>
-  <div class="card-sub">All-You-Can-Eat Ice Cream Bar</div>
+<!-- ── DECORATIONS (basketball) ── -->
+<div class="ball-court">
+  <div class="court-line"></div>
+  <div class="court-circle"></div>
+</div>
 
-  <button class="cone-btn" id="coneBtn">
-    <svg width="130" height="185" viewBox="0 0 130 185" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="coneLines" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
-          <line x1="0" y1="10" x2="10" y2="0" stroke="#A0612C" stroke-width="1.2"/>
-        </pattern>
-        <radialGradient id="s3g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#C87941"/></radialGradient>
-        <radialGradient id="s2g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#3A9B7F"/></radialGradient>
-        <radialGradient id="s1g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#D05080"/></radialGradient>
-      </defs>
-      <path d="M38 115 L65 182 L92 115 Z" fill="#C87941"/>
-      <path d="M38 115 L65 182 L92 115 Z" fill="url(#coneLines)" opacity="0.5"/>
-      <ellipse cx="65" cy="115" rx="27" ry="7" fill="#B06830"/>
-      <ellipse cx="65" cy="95" rx="29" ry="28" fill="#FFDAC1"/>
-      <ellipse cx="65" cy="95" rx="29" ry="28" fill="url(#s3g)" opacity="0.25"/>
-      <ellipse cx="65" cy="68" rx="26" ry="25" fill="#B5EAD7"/>
-      <ellipse cx="65" cy="68" rx="26" ry="25" fill="url(#s2g)" opacity="0.25"/>
-      <ellipse cx="65" cy="44" rx="23" ry="22" fill="#FFB3C6"/>
-      <ellipse cx="65" cy="44" rx="23" ry="22" fill="url(#s1g)" opacity="0.25"/>
-      <rect x="56" y="34" width="7" height="2.5" rx="1.2" fill="#FFE169" transform="rotate(-20 56 34)"/>
-      <rect x="67" y="38" width="7" height="2.5" rx="1.2" fill="#A8DADC" transform="rotate(15 67 38)"/>
-      <rect x="59" y="44" width="6" height="2.5" rx="1.2" fill="#E63946" transform="rotate(5 59 44)"/>
-      <rect x="70" y="48" width="6" height="2.5" rx="1.2" fill="#FFB3C6" transform="rotate(-30 70 48)"/>
-      <rect x="53" y="50" width="5" height="2.5" rx="1.2" fill="#B5EAD7" transform="rotate(40 53 50)"/>
-      <path d="M65 24 Q72 16 70 10" stroke="#6B3F2A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-      <circle cx="70" cy="9" r="6" fill="#E63946"/>
-      <circle cx="68" cy="7" r="2" fill="rgba(255,255,255,0.4)"/>
-    </svg>
+<!-- ── HAMBURGER ── -->
+<button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
+  <span class="bar"></span>
+  <span class="bar"></span>
+  <span class="bar"></span>
+</button>
+<div class="menu-overlay" id="menuOverlay"></div>
+<nav class="menu-drawer" id="menuDrawer">
+  <h3>My Counters</h3>
+  <button class="menu-item current" data-page="ice" id="menuIce">
+    <span class="menu-icon">🍦</span> Cruise Counter
   </button>
+  <button class="menu-item" data-page="ball" id="menuBall">
+    <span class="menu-icon">🏀</span> Pickup Basketball
+  </button>
+</nav>
 
-  <p class="tap-hint">TAP THE CONE TO COUNT</p>
+<!-- ══════════════════════════════════════════
+     ICE CREAM PAGE
+══════════════════════════════════════════ -->
+<div class="page active" id="page-ice">
+  <div class="ice-card">
+    <div class="ice-title">🚢 Cruise Cone Counter</div>
+    <div class="ice-sub">All-You-Can-Eat Ice Cream Bar</div>
 
-  <div class="counter-wrap">
-    <span class="counter-num" id="counterNum">0</span>
-    <div class="counter-label">🍦<br>cones<br>eaten</div>
+    <button class="cone-btn" id="coneBtn">
+      <svg width="120" height="170" viewBox="0 0 130 185" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="coneLines" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="10" x2="10" y2="0" stroke="#A0612C" stroke-width="1.2"/>
+          </pattern>
+          <radialGradient id="s3g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#C87941"/></radialGradient>
+          <radialGradient id="s2g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#3A9B7F"/></radialGradient>
+          <radialGradient id="s1g" cx="30%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="#D05080"/></radialGradient>
+        </defs>
+        <path d="M38 115 L65 182 L92 115 Z" fill="#C87941"/>
+        <path d="M38 115 L65 182 L92 115 Z" fill="url(#coneLines)" opacity="0.5"/>
+        <ellipse cx="65" cy="115" rx="27" ry="7" fill="#B06830"/>
+        <ellipse cx="65" cy="95" rx="29" ry="28" fill="#FFDAC1"/>
+        <ellipse cx="65" cy="95" rx="29" ry="28" fill="url(#s3g)" opacity="0.25"/>
+        <ellipse cx="65" cy="68" rx="26" ry="25" fill="#B5EAD7"/>
+        <ellipse cx="65" cy="68" rx="26" ry="25" fill="url(#s2g)" opacity="0.25"/>
+        <ellipse cx="65" cy="44" rx="23" ry="22" fill="#FFB3C6"/>
+        <ellipse cx="65" cy="44" rx="23" ry="22" fill="url(#s1g)" opacity="0.25"/>
+        <rect x="56" y="34" width="7" height="2.5" rx="1.2" fill="#FFE169" transform="rotate(-20 56 34)"/>
+        <rect x="67" y="38" width="7" height="2.5" rx="1.2" fill="#A8DADC" transform="rotate(15 67 38)"/>
+        <rect x="59" y="44" width="6" height="2.5" rx="1.2" fill="#E63946" transform="rotate(5 59 44)"/>
+        <rect x="70" y="48" width="6" height="2.5" rx="1.2" fill="#FFB3C6" transform="rotate(-30 70 48)"/>
+        <rect x="53" y="50" width="5" height="2.5" rx="1.2" fill="#B5EAD7" transform="rotate(40 53 50)"/>
+        <path d="M65 24 Q72 16 70 10" stroke="#6B3F2A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <circle cx="70" cy="9" r="6" fill="#E63946"/>
+        <circle cx="68" cy="7" r="2" fill="rgba(255,255,255,0.4)"/>
+      </svg>
+    </button>
+
+    <p class="tap-hint">TAP THE CONE TO COUNT</p>
+    <div class="ice-counter-wrap">
+      <span class="ice-num" id="iceNum">0</span>
+      <div class="ice-label">🍦<br>cones<br>eaten</div>
+    </div>
+    <div class="ice-message" id="iceMessage">Tap the cone to start! 🍦</div>
+    <div class="ice-saved" id="iceSaved"></div>
+    <button class="ice-reset" id="iceReset">↩ Reset Counter</button>
   </div>
+</div>
 
-  <div class="message" id="message">Tap the cone to start! 🍦</div>
-  <div class="saved-note" id="savedNote"></div>
-  <button class="reset-btn" id="resetBtn">↩ Reset Counter</button>
+<!-- ══════════════════════════════════════════
+     BASKETBALL PAGE
+══════════════════════════════════════════ -->
+<div class="page" id="page-ball">
+  <div class="ball-wrap">
+    <div class="ball-title">🏀 Pickup Hoops</div>
+    <div class="ball-sub">Scoreboard</div>
+
+    <!-- Period row -->
+    <div class="game-info-row">
+      <div class="period-wrap">
+        <span class="period-label">Period</span>
+        <span class="period-val" id="periodVal">1</span>
+        <div class="period-btns">
+          <button class="period-btn" id="periodDown">−</button>
+          <button class="period-btn" id="periodUp">+</button>
+        </div>
+      </div>
+      <button class="ball-reset" id="ballReset">↩ New Game</button>
+    </div>
+
+    <div class="scoreboard">
+      <div class="teams-row">
+        <div class="team-block">
+          <input class="team-name-input" id="team1Name" value="US" maxlength="8"/>
+          <div class="score-display" id="score1">0</div>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="team-block">
+          <input class="team-name-input" id="team2Name" value="THEM" maxlength="8"/>
+          <div class="score-display" id="score2">0</div>
+        </div>
+      </div>
+
+      <div class="score-controls">
+        <!-- Team 1 -->
+        <div class="team-controls">
+          <div class="pts-row">
+            <button class="pts-btn" data-team="1" data-pts="1">+1</button>
+            <button class="pts-btn" data-team="1" data-pts="2">+2</button>
+            <button class="pts-btn" data-team="1" data-pts="3">+3</button>
+          </div>
+          <button class="undo-btn" data-team="1">↩ Undo</button>
+        </div>
+        <!-- Team 2 -->
+        <div class="team-controls">
+          <div class="pts-row">
+            <button class="pts-btn" data-team="2" data-pts="1">+1</button>
+            <button class="pts-btn" data-team="2" data-pts="2">+2</button>
+            <button class="pts-btn" data-team="2" data-pts="3">+3</button>
+          </div>
+          <button class="undo-btn" data-team="2">↩ Undo</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
 (function() {
-  var STORAGE_KEY = 'cruiseConeCount';
 
-  // Load saved count, fallback to 0 if localStorage unavailable
-  var count = 0;
+  /* ── PAGE SWITCHING ──────────────────────────── */
+  var currentPage = 'ice';
+  var hamburgerBtn = document.getElementById('hamburgerBtn');
+  var menuDrawer   = document.getElementById('menuDrawer');
+  var menuOverlay  = document.getElementById('menuOverlay');
+
+  function openMenu() {
+    hamburgerBtn.classList.add('open');
+    menuDrawer.classList.add('open');
+    menuOverlay.classList.add('open');
+  }
+  function closeMenu() {
+    hamburgerBtn.classList.remove('open');
+    menuDrawer.classList.remove('open');
+    menuOverlay.classList.remove('open');
+  }
+
+  hamburgerBtn.addEventListener('click', function() {
+    if (menuDrawer.classList.contains('open')) closeMenu(); else openMenu();
+  });
+  menuOverlay.addEventListener('click', closeMenu);
+
+  function switchPage(page) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('page-' + page).classList.add('active');
+    document.body.className = 'page-' + page;
+    document.querySelectorAll('.menu-item').forEach(function(item) {
+      item.classList.toggle('current', item.dataset.page === page);
+    });
+    currentPage = page;
+    closeMenu();
+    try { localStorage.setItem('activeCounterPage', page); } catch(e) {}
+  }
+
+  document.querySelectorAll('.menu-item').forEach(function(item) {
+    item.addEventListener('click', function() { switchPage(item.dataset.page); });
+  });
+
+  // Restore last page
   try {
-    var saved = localStorage.getItem(STORAGE_KEY);
-    if (saved !== null) count = parseInt(saved, 10) || 0;
+    var lastPage = localStorage.getItem('activeCounterPage');
+    if (lastPage === 'ball') switchPage('ball');
   } catch(e) {}
 
-  var btn = document.getElementById('coneBtn');
-  var numEl = document.getElementById('counterNum');
-  var msgEl = document.getElementById('message');
-  var savedNote = document.getElementById('savedNote');
-  var resetBtn = document.getElementById('resetBtn');
-
-  var messages = [
-    [50, "50 cones... absolute icon! 🍦👑"],
-    [30, "30 cones! Are you even human?! 🤖"],
-    [25, "The ice cream bar fears you! 😂"],
-    [20, "20 cones! Legend status! 👑"],
-    [15, "You deserve a medal! 🥇"],
-    [10, "Double digits! Pure dedication! 💪"],
-    [7,  "Living your best cruise life! 🚢"],
-    [5,  "Five?! You're on a ROLL! 🌊"],
-    [3,  "A hat-trick of cones! 🏆"],
-    [2,  "Two scoops, no regrets! 😄"],
-    [1,  "First scoop — vacation has begun! 🎉"],
-    [0,  "Tap the cone to start! 🍦"]
-  ];
-
-  function getMessage(n) {
-    for (var i = 0; i < messages.length; i++) {
-      if (n >= messages[i][0]) return messages[i][1];
-    }
-    return "Keep scooping!";
-  }
-
-  function saveCount(n) {
-    try {
-      localStorage.setItem(STORAGE_KEY, String(n));
-      // Show a brief "saved" confirmation
-      savedNote.textContent = '✓ Count saved to this device';
-      clearTimeout(saveCount._timer);
-      saveCount._timer = setTimeout(function() {
-        savedNote.textContent = '';
-      }, 2000);
-    } catch(e) {
-      savedNote.textContent = '';
-    }
-  }
-
-  function renderCount(animate) {
-    numEl.textContent = String(count);
-    msgEl.textContent = getMessage(count);
-    if (animate) {
-      numEl.classList.remove('bump');
-      void numEl.offsetWidth;
-      numEl.classList.add('bump');
-    }
-  }
-
-  // Render saved count on load
-  renderCount(false);
-  if (count > 0) {
-    savedNote.textContent = '✓ Resumed from last visit (' + count + ' cone' + (count !== 1 ? 's' : '') + ')';
-    setTimeout(function() { savedNote.textContent = ''; }, 3000);
-  }
-
-  function spawnParticles() {
-    var rect = btn.getBoundingClientRect();
+  /* ── PARTICLES ───────────────────────────────── */
+  function spawnParticles(el, colors) {
+    var rect = el.getBoundingClientRect();
     var cx = rect.left + rect.width / 2;
-    var cy = rect.top + rect.height / 3;
-    var colors = ['#FFB3C6','#B5EAD7','#FFDAC1','#FFE169','#A8DADC','#E63946'];
-    for (var i = 0; i < 12; i++) {
+    var cy = rect.top + rect.height / 2;
+    for (var i = 0; i < 10; i++) {
       (function() {
         var p = document.createElement('div');
         p.className = 'particle';
-        var size = 7 + Math.random() * 7;
-        var tx = (Math.random() - 0.5) * 160;
-        var ty = -(Math.random() * 120 + 30);
+        var size = 6 + Math.random() * 7;
+        var tx = (Math.random() - 0.5) * 140;
+        var ty = -(Math.random() * 100 + 20);
         p.style.cssText = 'width:' + size + 'px;height:' + size + 'px;background:' +
           colors[Math.floor(Math.random() * colors.length)] + ';left:' + cx + 'px;top:' + cy +
           'px;--tx:' + tx + 'px;--ty:' + ty + 'px;';
@@ -361,26 +579,171 @@
     }
   }
 
-  btn.addEventListener('click', function() {
-    count = count + 1;
-    renderCount(true);
-    saveCount(count);
+  /* ═══════════════════════════════════════════
+     ICE CREAM LOGIC
+  ═══════════════════════════════════════════ */
+  var iceCount = 0;
+  try { iceCount = parseInt(localStorage.getItem('cruiseConeCount') || '0', 10) || 0; } catch(e) {}
 
-    btn.classList.remove('wobble');
-    void btn.offsetWidth;
-    btn.classList.add('wobble');
+  var coneBtn   = document.getElementById('coneBtn');
+  var iceNum    = document.getElementById('iceNum');
+  var iceMsg    = document.getElementById('iceMessage');
+  var iceSaved  = document.getElementById('iceSaved');
+  var iceReset  = document.getElementById('iceReset');
 
-    spawnParticles();
+  var iceMsgs = [
+    [50,"50 cones... absolute icon! 🍦👑"],
+    [30,"30 cones! Are you even human?! 🤖"],
+    [25,"The ice cream bar fears you! 😂"],
+    [20,"20 cones! Legend status! 👑"],
+    [15,"You deserve a medal! 🥇"],
+    [10,"Double digits! Pure dedication! 💪"],
+    [7, "Living your best cruise life! 🚢"],
+    [5, "Five?! You're on a ROLL! 🌊"],
+    [3, "A hat-trick of cones! 🏆"],
+    [2, "Two scoops, no regrets! 😄"],
+    [1, "First scoop — vacation has begun! 🎉"],
+    [0, "Tap the cone to start! 🍦"]
+  ];
+  function getIceMsg(n) {
+    for (var i=0;i<iceMsgs.length;i++) if (n>=iceMsgs[i][0]) return iceMsgs[i][1];
+    return "Keep scooping!";
+  }
+  function saveIce(n) {
+    try { localStorage.setItem('cruiseConeCount', String(n)); } catch(e) {}
+    iceSaved.textContent = '✓ Saved';
+    clearTimeout(saveIce._t);
+    saveIce._t = setTimeout(function(){ iceSaved.textContent=''; }, 1800);
+  }
+  function renderIce(animate) {
+    iceNum.textContent = String(iceCount);
+    iceMsg.textContent = getIceMsg(iceCount);
+    if (animate) {
+      iceNum.classList.remove('bump'); void iceNum.offsetWidth; iceNum.classList.add('bump');
+    }
+  }
+  renderIce(false);
+  if (iceCount > 0) {
+    iceSaved.textContent = '✓ Resumed (' + iceCount + ' cone' + (iceCount!==1?'s':'') + ')';
+    setTimeout(function(){ iceSaved.textContent=''; }, 2500);
+  }
+
+  coneBtn.addEventListener('click', function() {
+    iceCount++;
+    renderIce(true);
+    saveIce(iceCount);
+    coneBtn.classList.remove('wobble'); void coneBtn.offsetWidth; coneBtn.classList.add('wobble');
+    spawnParticles(coneBtn, ['#FFB3C6','#B5EAD7','#FFDAC1','#FFE169','#A8DADC','#E63946']);
   });
 
-  resetBtn.addEventListener('click', function() {
-    if (count === 0) return;
-    if (window.confirm('Reset your ' + count + ' cone' + (count !== 1 ? 's' : '') + '? 😢')) {
-      count = 0;
-      renderCount(false);
-      saveCount(0);
+  iceReset.addEventListener('click', function() {
+    if (iceCount === 0) return;
+    if (window.confirm('Reset ' + iceCount + ' cone' + (iceCount!==1?'s':'') + '? 😢')) {
+      iceCount = 0; renderIce(false); saveIce(0);
     }
   });
+
+  /* ═══════════════════════════════════════════
+     BASKETBALL LOGIC
+  ═══════════════════════════════════════════ */
+  var ballState = { s1:0, s2:0, period:1, hist1:[], hist2:[] };
+
+  function loadBall() {
+    try {
+      var raw = localStorage.getItem('pickupHoops');
+      if (raw) ballState = JSON.parse(raw);
+    } catch(e) {}
+  }
+  function saveBall() {
+    try { localStorage.setItem('pickupHoops', JSON.stringify(ballState)); } catch(e) {}
+  }
+
+  var score1El   = document.getElementById('score1');
+  var score2El   = document.getElementById('score2');
+  var periodVal  = document.getElementById('periodVal');
+  var team1Name  = document.getElementById('team1Name');
+  var team2Name  = document.getElementById('team2Name');
+
+  function renderBall() {
+    score1El.textContent = String(ballState.s1);
+    score2El.textContent = String(ballState.s2);
+    periodVal.textContent = String(ballState.period);
+  }
+
+  function flashScore(el) {
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
+
+  loadBall();
+  // restore team names
+  try {
+    var n1 = localStorage.getItem('hoopsTeam1'); if (n1) team1Name.value = n1;
+    var n2 = localStorage.getItem('hoopsTeam2'); if (n2) team2Name.value = n2;
+  } catch(e) {}
+  renderBall();
+
+  team1Name.addEventListener('input', function() {
+    try { localStorage.setItem('hoopsTeam1', team1Name.value); } catch(e) {}
+  });
+  team2Name.addEventListener('input', function() {
+    try { localStorage.setItem('hoopsTeam2', team2Name.value); } catch(e) {}
+  });
+
+  // +pts buttons
+  document.querySelectorAll('.pts-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var team = parseInt(btn.dataset.team);
+      var pts  = parseInt(btn.dataset.pts);
+      if (team === 1) {
+        ballState.hist1.push(pts);
+        ballState.s1 += pts;
+        flashScore(score1El);
+        spawnParticles(btn, ['#F4A23A','#FFD166','#FF9A3C','#FFF0C0']);
+      } else {
+        ballState.hist2.push(pts);
+        ballState.s2 += pts;
+        flashScore(score2El);
+        spawnParticles(btn, ['#F4A23A','#FFD166','#FF9A3C','#FFF0C0']);
+      }
+      saveBall();
+      renderBall();
+    });
+  });
+
+  // undo buttons
+  document.querySelectorAll('.undo-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var team = parseInt(btn.dataset.team);
+      if (team === 1 && ballState.hist1.length > 0) {
+        var last = ballState.hist1.pop();
+        ballState.s1 = Math.max(0, ballState.s1 - last);
+      } else if (team === 2 && ballState.hist2.length > 0) {
+        var last2 = ballState.hist2.pop();
+        ballState.s2 = Math.max(0, ballState.s2 - last2);
+      }
+      saveBall(); renderBall();
+    });
+  });
+
+  // period
+  document.getElementById('periodUp').addEventListener('click', function() {
+    ballState.period = Math.min(ballState.period + 1, 9);
+    saveBall(); renderBall();
+  });
+  document.getElementById('periodDown').addEventListener('click', function() {
+    ballState.period = Math.max(ballState.period - 1, 1);
+    saveBall(); renderBall();
+  });
+
+  // new game
+  document.getElementById('ballReset').addEventListener('click', function() {
+    if (ballState.s1 === 0 && ballState.s2 === 0) return;
+    if (window.confirm('Start a new game? Scores will reset. 🏀')) {
+      ballState = { s1:0, s2:0, period:1, hist1:[], hist2:[] };
+      saveBall(); renderBall();
+    }
+  });
+
 })();
 </script>
 </body>
